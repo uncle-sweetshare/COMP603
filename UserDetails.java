@@ -1,6 +1,7 @@
 /*
  * COMP603/03 Project 2, Group 6. Marina Newman 14873443 and Erin Thomas 21145466 THIS IS PROJECT 2 WITH THE DATABASE AND GUI
  */
+
 package p06_14873443_21145466;
 
 import java.sql.*;
