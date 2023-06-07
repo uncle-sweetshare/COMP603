@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class ShowDetails {
 
-    Seats seatsObj = new Seats(); //new instance of Seats class, for the methods.
+    Seats seatsObj = new Seats(); //new instance of Seats class, for the methods. do we need this??
 
     private Connection connection;
 
@@ -16,6 +16,52 @@ public class ShowDetails {
         this.connection = connection;
     }
 
+    //M 7/6: added this method to populate the show table (duh). still testing.
+        public void populateShowsTable() {
+        try {
+            //trying to create then populate in the same method
+            String createShowsTableStatement = "CREATE TABLE IF NOT EXISTS shows ("
+                    + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
+                    + "name VARCHAR(255) NOT NULL, "
+                    + "description VARCHAR(255) NOT NULL, "
+                    + "date DATE NOT NULL)";
+
+            connection.createStatement().executeUpdate(createShowsTableStatement);
+
+            //SQL statement to insert show details
+            String insertShowStatement = "INSERT INTO shows (name, description, date) VALUES (?, ?, ?)";
+
+            //Show data
+            String[] showNames = {"Cats", "Little Shop of Horrors", "Fiddler on the Roof", "Evita"};
+            String[] descriptions = {"Cats (1981): Based on the universally popular poetry of T.S. Eliot, Cats tells the story of the annual gathering of Jellicle cats at which time one special cat is selected to ascend to the Heaviside layer.",
+                "Little Shop of Horrors (1982): The meek floral assistant, Seymour Krelborn, raises a new breed of carnivorous plant he names “Audrey II” after his coworker crush. Over time, Seymour discovers Audrey II’s evil intent...",
+                "Fiddler on the Roof (1971): In pre-revolutionary Russia, Tevye, a poor Jewish peasant living in Anatevka, is faced with the challenge of marrying off his five daughters amidst the growing tension in his village.",
+                "Evita (1978): Based on the life of Eva Peron, a B-picture Argentinian actress who eventually became the wife of Argentinian president Juan Domingo Perón, and the most beloved and hated woman in Argentina."};
+            String[][] dates = {
+                {"24 June", "01 July", "19 July"}, //Dates for Show 1
+                {"21 June", "10 July", "26 July"}, //Dates for Show 2
+                {"12 June", "27 June", "04 July"}, //Dates for Show 3
+                {"18 June", "03 July", "18 July"} //Dates for Show 4
+            };
+
+            //Execute SQL statement for each show
+            try (PreparedStatement statement = connection.prepareStatement(insertShowStatement)) {
+                for (int i = 0; i < showNames.length; i++) {
+                    for (int j = 0; j < dates[i].length; j++) {
+                        // Set the parameter values for each show and date
+                        statement.setString(1, showNames[i]);
+                        statement.setString(2, descriptions[i]);
+                        statement.setDate(3, Date.valueOf(dates[i][j]));
+                        statement.executeUpdate();
+                    }
+                }
+            }
+            System.out.println("test print: Shows table populated successfully.");
+        } catch (SQLException e) {
+            System.out.println("Error executing SQL query: " + e.getMessage());
+        }
+    }
+    
     //this is meant to like. encompass all the other methods because it pulls data from the DB i think. but don't trust it. it's not right.
     public void printShowDetails() {
         try {
