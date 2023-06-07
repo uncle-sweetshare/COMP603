@@ -28,7 +28,7 @@ public class MainMethod {
             showDetails.printShowDetails();
             
             userDetails.retrieveUsers(connection); //retrieves users from DB
-            showDetails.retrieveShows(connection); //retrieves shows from DB - need to fix
+            showDetails.printShowDetails(); //M: changed the method call here. //retrieves shows from DB
 
             String userInput = "";
             String username = "";

@@ -95,7 +95,9 @@ public class UserDetails {
 
             User user = storeUsers.get(username);
             if (user != null) {
-                user.bookShow(new Show(showName)); //yes this is red the params are wrong i'll look at it tomorrow
+                Show addShow = new Show(); //M: "fixed" these couple of lines.
+                addShow.setName(showName);
+                user.bookShow(addShow); 
             }
         } catch (SQLException e) {
             e.printStackTrace();
