@@ -40,7 +40,7 @@ public class ShowDetails {
     }
 
     //the book method, which i somehow DELETED INSTEAD OF JUST CHANGING IT
-    public boolean book(String username) {
+    public boolean book(Connection connection, String username) {
         Scanner scanner = new Scanner(System.in);
         boolean quit = false;
 

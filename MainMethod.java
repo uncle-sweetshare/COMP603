@@ -10,19 +10,23 @@ import java.sql.*;
 public class MainMethod {
 
     public static void main(String[] args) {
-
-        ShowDetails showDetails = new ShowDetails();
+        //ET: feel free to undo what i've done, im just havin a bit of a wiggle.
+        //ShowDetails showDetails = new ShowDetails(); //ET: testing to see if this needs to be moved down til after the database is created.
         UserDetails userDetails = new UserDetails();
         Scanner scan = new Scanner(System.in);
 
-        showDetails.printShowList(); //this method needs to be redone in showDetails. or separate it from the dispay show stuff method or something
-
+        //showDetails.printShowList(); //this method needs to be redone in showDetails. or separate it from the dispay show stuff method or something
+        //ET: isn't it called printShowDetails? there isn't a printShowList method.
+        
         //DB changes begin here:
         //start database connection
         try (Connection connection = DriverManager.getConnection("jdbc:derby:database_name;create=true")) { //database_name is a placeholder, it needs to be the actual database's actual name ("booking_boss"?)m 
            //create database tables if they don't exist
             createTables(connection);
 
+            ShowDetails showDetails = new ShowDetails(connection);
+            showDetails.printShowDetails();
+            
             userDetails.retrieveUsers(connection); //retrieves users from DB
             showDetails.retrieveShows(connection); //retrieves shows from DB - need to fix
 
@@ -94,16 +98,12 @@ public class MainMethod {
                     if (selected.equalsIgnoreCase("a")) {
                         System.out.println("\nAvailable shows:");
                         showDetails.printShowDetails(); //changed this from List to Details, need to test
-                        boolean quit = showDetails.printShowDetails(); //ehhhhh i dunno
-
-                        if (quit) {
-                            break;
-                        }
+                        showDetails.printShowDetails(); //ehhhhh i dunno
                     } else if (selected.equalsIgnoreCase("b")) {
                         System.out.println("\n" + username + "'s previously booked shows: ");
                         userDetails.printHistory(connection, username);
                     } else if (selected.equalsIgnoreCase("c")) {
-                        boolean quit = showDetails.book(connection, username);
+                        boolean quit = showDetails.book(connection, username); //ET: i changed the constructer to include connection. Just so the error went away, it doesn't do anything different.
 
                         if (quit) {
                             break;
