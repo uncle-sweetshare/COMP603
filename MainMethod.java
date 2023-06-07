@@ -14,17 +14,14 @@ public class MainMethod {
         //ShowDetails showDetails = new ShowDetails(); //ET: testing to see if this needs to be moved down til after the database is created.
         UserDetails userDetails = new UserDetails();
         Scanner scan = new Scanner(System.in);
-
-        //showDetails.printShowList(); //this method needs to be redone in showDetails. or separate it from the dispay show stuff method or something
-        //ET: isn't it called printShowDetails? there isn't a printShowList method.
         
-        //DB changes begin here:
         //start database connection
-        try (Connection connection = DriverManager.getConnection("jdbc:derby:database_name;create=true")) { //database_name is a placeholder, it needs to be the actual database's actual name ("booking_boss"?)m 
+        try (Connection connection = DriverManager.getConnection("jdbc:derby:booking_boss;create=true")) {
            //create database tables if they don't exist
             createTables(connection);
 
             ShowDetails showDetails = new ShowDetails(connection);
+            showDetails.populateShowsTable(); //M 7/6: calling method to test
             showDetails.printShowDetails();
             
             userDetails.retrieveUsers(connection); //retrieves users from DB
@@ -112,49 +109,68 @@ public class MainMethod {
                 } while (true);
             }
         } catch (SQLException e) {
-            System.out.println("An error occurred while connecting to the database: " + e.getMessage());
+            System.out.println("Error connecting to database! " + e.getMessage());
         }
     }
 
-    //helper method creates DB tables if they don't exist
-    private static void createTables(Connection connection) throws SQLException {
-        String createUserTable = "CREATE TABLE IF NOT EXISTS users ("
-                + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
-                + "username VARCHAR(255) UNIQUE NOT NULL, "
-                + "password VARCHAR(255) NOT NULL)";
-
-        String createShowTable = "CREATE TABLE IF NOT EXISTS shows ("
-                + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
-                + "title VARCHAR(255) NOT NULL, "
-                + "date DATE NOT NULL, "
-                + "time TIME NOT NULL)";
-
-        //run SQL statements to create tables
+    //M 7/6: added this to replace old GARBAGE method. it does indeed create the table properly
+    public static void createTables(Connection connection) {
         try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(createUserTable);
-            statement.executeUpdate(createShowTable);
+            connection.setAutoCommit(false); //Start connection
+
+            //Check if the users table exists
+            ResultSet usersTableResult = connection.getMetaData().getTables(null, null, "users", null);
+            boolean usersTableExists = usersTableResult.next();
+            
+            /*
+            //Check if the shows table exists
+            ResultSet showsTableResult = connection.getMetaData().getTables(null, null, "shows", null);
+            boolean showsTableExists = showsTableResult.next(); */
+
+            if (!usersTableExists) { //If users table doesn't exist, create it
+                statement.executeUpdate("CREATE TABLE users ("
+                        + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
+                        + "username VARCHAR(255) UNIQUE NOT NULL, "
+                        + "password VARCHAR(255) NOT NULL)"
+                );
+
+                //Dummy users for testing
+                statement.executeUpdate("INSERT INTO users (username, password) VALUES ('user1', 'pass1')");
+                statement.executeUpdate("INSERT INTO users (username, password) VALUES ('user2', 'pass2')");
+
+                System.out.println("Users table created successfully.");
+            } else {
+                System.out.println("Users table already exists.");
+            }
+
+            /*
+            if (!showsTableExists) { //If shows table doesn't exist, create it
+                statement.executeUpdate("CREATE TABLE shows ("
+                        + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
+                        + "name VARCHAR(255) NOT NULL, "
+                        + "description VARCHAR(255) NOT NULL, "
+                        + "date DATE NOT NULL)"
+                );
+
+                System.out.println("Shows table created successfully.");
+            } else {
+                System.out.println("Shows table already exists.");
+            } */
+
+            connection.commit(); //Commit!
+
+        } catch (SQLException e) {
+            System.out.println("An error occurred while creating database tables: " + e.getMessage());
         }
     }
 
-    //insert new user into the users table - call this somewhere
+    //insert new user into the users table - call this somewhere or maybe move to UserDetails class? did i already put something there?
     private static void insertUser(Connection connection, String username, String password) throws SQLException {
         String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             statement.setString(2, password);
-            statement.executeUpdate();
-        }
-    }
-
-    //insert new show into the shows table - call this somewhere
-    private static void insertShow(Connection connection, String title, Date date, Time time) throws SQLException {
-        String sql = "INSERT INTO shows (title, date, time) VALUES (?, ?, ?)";
-
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, title);
-            statement.setDate(2, date);
-            statement.setTime(3, time);
             statement.executeUpdate();
         }
     }
