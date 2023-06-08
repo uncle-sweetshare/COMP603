@@ -1,7 +1,6 @@
 /*
  * COMP603/03 Project 2, Group 6. Marina Newman 14873443 and Erin Thomas 21145466 THIS IS PROJECT 2 WITH THE DATABASE AND GUI
  */
-
 package p06_14873443_21145466;
 
 import java.util.Scanner;
@@ -15,21 +14,20 @@ public class MainMethod {
         UserDetails userDetails = new UserDetails();
         Scanner scan = new Scanner(System.in);
 
-        //showDetails.printShowList(); //this method needs to be redone in showDetails. or separate it from the dispay show stuff method or something
-        //ET: isn't it called printShowDetails? there isn't a printShowList method.
-        
-        //DB changes begin here:
-        //start database connection
-        try (Connection connection = DriverManager.getConnection("jdbc:derby:database_name;create=true")) { //database_name is a placeholder, it needs to be the actual database's actual name ("booking_boss"?)m 
-           //create database tables if they don't exist
-            createTables(connection);
-
-            ShowDetails showDetails = new ShowDetails(connection);
-            showDetails.printShowDetails();
+        //Start database connection
+        try (Connection connection = DriverManager.getConnection("jdbc:derby:booking_boss;create=true")) {
             
-            userDetails.retrieveUsers(connection); //retrieves users from DB
-            showDetails.printShowDetails(); //M: changed the method call here. //retrieves shows from DB
+            //dropAllTables(connection); //be careful with this one................ feel free to comment it out
 
+            Seats seats = new Seats();
+            ShowDetails showDetails = new ShowDetails(connection);
+            showDetails.createShowTable(connection); //M 8/6: create the shows table - WORKING
+            showDetails.populateShowsTable(); //M 8/6: populate the shows table - WORKING
+            
+            //showDetails.printShowDetails(); // M 8/6: retrieve show details from database & print - WORKING
+            userDetails.createUserTable(connection); //M 8/6: create the user table - WORKING
+            userDetails.retrieveUsers(connection); //retrieves users from DB - WORKING
+            
             String userInput = "";
             String username = "";
             String password = "";
@@ -57,7 +55,7 @@ public class MainMethod {
                         break;
                     }
 
-                    matching = userDetails.login(connection, username, password); //it's fixed now but doesn't work for echo
+                    matching = userDetails.login(connection, username, password);
                 } else if (userInput.equalsIgnoreCase("b")) {
                     System.out.println("Username:");
                     username = scan.nextLine();
@@ -73,7 +71,7 @@ public class MainMethod {
                         break;
                     }
 
-                    matching = userDetails.register(connection, username, password); //as above
+                    matching = userDetails.register(connection, username, password);
                 } else if (userInput.equalsIgnoreCase("x")) {
                     System.out.println("Thanks for using Booking Boss!");
                     break;
@@ -97,13 +95,12 @@ public class MainMethod {
 
                     if (selected.equalsIgnoreCase("a")) {
                         System.out.println("\nAvailable shows:");
-                        showDetails.printShowDetails(); //changed this from List to Details, need to test
-                        showDetails.printShowDetails(); //ehhhhh i dunno
+                        showDetails.printShowDetails(); //YES THIS WORKS
                     } else if (selected.equalsIgnoreCase("b")) {
                         System.out.println("\n" + username + "'s previously booked shows: ");
                         userDetails.printHistory(connection, username);
                     } else if (selected.equalsIgnoreCase("c")) {
-                        boolean quit = showDetails.book(connection, username); //ET: i changed the constructer to include connection. Just so the error went away, it doesn't do anything different.
+                        boolean quit = showDetails.book(username); //ET: i changed the constructer to include connection. Just so the error went away, it doesn't do anything different. M 08/06: sorry i've changed it again, reverted book method so it's file I/O
 
                         if (quit) {
                             break;
@@ -112,50 +109,29 @@ public class MainMethod {
                 } while (true);
             }
         } catch (SQLException e) {
-            System.out.println("An error occurred while connecting to the database: " + e.getMessage());
+            System.out.println("Error connecting to database! " + e.getMessage());
         }
     }
 
-    //helper method creates DB tables if they don't exist
-    private static void createTables(Connection connection) throws SQLException {
-        String createUserTable = "CREATE TABLE IF NOT EXISTS users ("
-                + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
-                + "username VARCHAR(255) UNIQUE NOT NULL, "
-                + "password VARCHAR(255) NOT NULL)";
+    //M 8/6: added this method for testing, don't randomly call it because it will delete all the tables lol
+    public static void dropAllTables(Connection connection) {
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+            ResultSet resultSet = metaData.getTables(null, null, null, new String[]{"TABLE"});
 
-        String createShowTable = "CREATE TABLE IF NOT EXISTS shows ("
-                + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
-                + "title VARCHAR(255) NOT NULL, "
-                + "date DATE NOT NULL, "
-                + "time TIME NOT NULL)";
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("TABLE_NAME");
+                String dropStatement = "DROP TABLE " + tableName;
 
-        //run SQL statements to create tables
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(createUserTable);
-            statement.executeUpdate(createShowTable);
-        }
-    }
+                try (Statement statement = connection.createStatement()) {
+                    statement.executeUpdate(dropStatement);
+                    System.out.println("Dropped table: " + tableName);
+                }
+            }
 
-    //insert new user into the users table - call this somewhere
-    private static void insertUser(Connection connection, String username, String password) throws SQLException {
-        String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, username);
-            statement.setString(2, password);
-            statement.executeUpdate();
-        }
-    }
-
-    //insert new show into the shows table - call this somewhere
-    private static void insertShow(Connection connection, String title, Date date, Time time) throws SQLException {
-        String sql = "INSERT INTO shows (title, date, time) VALUES (?, ?, ?)";
-
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, title);
-            statement.setDate(2, date);
-            statement.setTime(3, time);
-            statement.executeUpdate();
+            System.out.println("All tables dropped successfully.");
+        } catch (SQLException e) {
+            System.out.println("An error occurred while dropping tables: " + e.getMessage());
         }
     }
 }

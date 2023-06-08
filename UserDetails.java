@@ -16,6 +16,37 @@ public class UserDetails {
         this.storeUsers = new HashMap<>();
     }
 
+    //M 8/6: creates a user table. WORKING!
+    public void createUserTable(Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            connection.setAutoCommit(true); //Start connection
+
+            //Check if the users table exists
+            ResultSet usersTableResult = connection.getMetaData().getTables(null, null, "users", null);
+            boolean usersTableExists = usersTableResult.next();
+
+            if (!usersTableExists) { //If users table doesn't exist, create it
+                statement.executeUpdate("CREATE TABLE users ("
+                        + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
+                        + "username VARCHAR(255) UNIQUE NOT NULL, "
+                        + "password VARCHAR(255) NOT NULL)"
+                );
+
+                //Dummy users for testing purposes
+                statement.executeUpdate("INSERT INTO users (username, password) VALUES ('user1', 'pass1')");
+                statement.executeUpdate("INSERT INTO users (username, password) VALUES ('user2', 'pass2')");
+
+                System.out.println("Users table created successfully.");
+            } else {
+                System.out.println("Users table already exists.");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("An error occurred while creating database tables: " + e.getMessage());
+        }
+    }
+    
+    //yeah i think this works
     public boolean login(Connection connection, String username, String password) {
         boolean matching = false;
 
@@ -40,7 +71,7 @@ public class UserDetails {
         return matching;
     }
 
-    //updated then made more changes and forgot what i did :\ anyway it's meant to retrieve info from DB and make a new user object. why did i delete all the old comments explaining the methods??????
+    //think this works ok
     public boolean register(Connection connection, String username, String password) {
         boolean match = false;
 
@@ -57,7 +88,7 @@ public class UserDetails {
         return match;
     }
 
-    //updated this method - it should retrieve info from the DB to populate the storeUsers hashmap
+    //think this works - it should retrieve info from the DB to populate the storeUsers hashmap. just make sure the map is instantiated before calling it
     public void retrieveUsers(Connection connection) {
         try (Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
