@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class ShowDetails {
 
-    Seats seatsObj = new Seats(); //new instance of Seats class, for the methods. do we need this?? yes lol i vommented it out and it broke things :^)
+    Seats seatsObj = new Seats();
 
     private Connection connection;
 
@@ -119,7 +119,7 @@ public class ShowDetails {
         }
     }
 
-    //M 8/6: actually just grabbed the original book method because it's a beast - maybe look at splitting it?
+    //M 8/6: actually just grabbed the original book method because it's a beast - maybe look at splitting it? also it's broken and i can't brain enough to fix it right now
     /* Book method:
      * Takes in username as a parameter so it can be passed to the saveHistory method, which saves the show to the user's file.
      * User selects a show to book along with a date, and the correct seating array is loaded based on these choices. The
@@ -140,6 +140,7 @@ public class ShowDetails {
             quit = true;
         }
 
+        //M 8/6: yeah obviously this is where it gets all fucky and i think you wrote this part echo? i can't remember what's going on here
         //User's choice of show:
         if (selectShow.equalsIgnoreCase("a") || selectShow.equalsIgnoreCase("b")
                 || selectShow.equalsIgnoreCase("c") || selectShow.equalsIgnoreCase("d"))
