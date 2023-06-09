@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class ShowDetails {
 
     Seats seatsObj = new Seats();
-    UserDetails userdetailsObj = new UserDetails();
+    UserDetails userDetailsObj = new UserDetails();
 
     private Connection connection;
 
@@ -141,7 +141,7 @@ public class ShowDetails {
         }
 
         return result.toString();
-    }
+    }    
 
     //M 9/6: i hate this method i am working on it but i hate it
     /* Book method:
@@ -183,7 +183,7 @@ public class ShowDetails {
         } else {
             System.out.println("Show not found!");
         }
-        if (!quit) {
+        if (!quit && !showChoice.isEmpty()) {
             System.out.println("\nEnter a date:");
             String dateInput = scan.nextLine();
 
@@ -249,6 +249,8 @@ public class ShowDetails {
                 }
             }
         }
+        
+        if (!quit && !dateChoice.isEmpty()) {
         boolean[][] choosingSeats = seatsObj.loadSeats(showChoice, dateChoice); //Load the correct show's seat array based on show and date option chosen
 
         System.out.println("\nSeat availability:\n");
@@ -295,44 +297,44 @@ public class ShowDetails {
             } while (!success);
         }
 
-        //fixing stuff below here
-        if (!quit) {
-            seatsObj.chooseSeat(choosingSeats, row, col);
-            seatsObj.saveSeats(choosingSeats, showChoice, dateChoice);
+            if (!quit) {
+                if (row >= 1 && row <= choosingSeats.length && col >= 1 && col <= choosingSeats[0].length) {
+                    if (choosingSeats[row - 1][col - 1]) {
+                        System.out.println("Seat is already booked!");
+                    } else {
+                        choosingSeats[row - 1][col - 1] = true;
+                        seatsObj.saveSeats(choosingSeats, showChoice, dateChoice);
 
-            //Save booked show to user's file
-            switch (showChoice.toLowerCase()) {
-                case "a":
-                    userdetailsObj.saveHistory(connection, username, "Cats");
-                    break;
-                case "b":
-                    userdetailsObj.saveHistory(connection, username, "Little Shop of Horrors");
-                    break;
-                case "c":
-                    userdetailsObj.saveHistory(connection, username, "Fiddler on the Roof");
-                    break;
-                case "d":
-                    userdetailsObj.saveHistory(connection, username, "Evita");
-                    break;
-            }
+                        //Generate ticket and calculate price based on seat location
+                        if (row <= 2)
+                        {
+                            PlatinumTicket ticket = new PlatinumTicket(row);
+                            ticket.calcPrice(row);
+                            ticket.printPrice();
 
-            //Ticket creation
-            if (row <= 2) //Depending on which row they pick, the tickets will be different prices. Expensive in the front and cheaper at the back.
-            {
-                PlatinumTicket ticket = new PlatinumTicket(row);
-                ticket.calcPrice(row);
-                ticket.printPrice();
+                        } else if (row > 2 && row <= 5) {
+                            GoldTicket ticket = new GoldTicket(row);
+                            ticket.calcPrice(row);
+                            ticket.printPrice();
+                        } else if (row > 5 && row <= 9) {
+                            StandardTicket ticket = new StandardTicket(row);
+                            ticket.calcPrice(row);
+                            ticket.printPrice();
+                        }
 
-            } else if (row > 2 && row <= 5) {
-                GoldTicket ticket = new GoldTicket(row);
-                ticket.calcPrice(row);
-                ticket.printPrice();
-            } else if (row > 5 && row <= 9) {
-                StandardTicket ticket = new StandardTicket(row);
-                ticket.calcPrice(row);
-                ticket.printPrice();
+                        System.out.println("\nTicket booked successfully!");
+
+                        // Save show to user's history file
+                        userDetailsObj.saveHistory(connection, username, showNameInput);
+                    }
+                } else {
+                    System.out.println("Invalid seat selection!");
+                }
             }
         }
-        return quit;
+
+    scan.close();
+    
+    return quit;
     }
 }

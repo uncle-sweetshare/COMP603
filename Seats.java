@@ -184,9 +184,8 @@ public class Seats {
         return result.toString(); //Return the created array-string
     }
 
-    //OLD METHOD
     /* PrintArray method:
-     * Prints the array that is passed in, with row and column numbers for clarity. <- this is old just keeping it so i can rewrite later
+     * Prints the array that is passed in, with row and column numbers for clarity.
      */
     public void printArray(boolean[][] seatsArray) {
         System.out.print("   "); //For correctly spacing the numbers

@@ -30,17 +30,18 @@ public class UserDetails {
                         + "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
                         + "username VARCHAR(255) UNIQUE NOT NULL, "
                         + "password VARCHAR(255) NOT NULL, "
-                        + "history VARCHAR(255))"
+                        + "history VARCHAR(255) DEFAULT NULL)"
                 );
 
                 //Dummy users for testing purposes
                 statement.executeUpdate("INSERT INTO users (username, password, history) VALUES ('user1', 'pass1', 'Cats')");
-                statement.executeUpdate("INSERT INTO users (username, password) VALUES ('user2', 'pass2')");
+                statement.executeUpdate("INSERT INTO users (username, password, history) VALUES ('user2', 'pass2', 'Evita')");
 
                 System.out.println("Users table created successfully.");
             } else {
-                System.out.println("Users table already exists.");
-            }
+                    System.out.println("Users table already exists.");
+                }
+            
 
         } catch (SQLException e) {
             System.out.println("An error occurred while creating database tables: " + e.getMessage());
@@ -76,9 +77,10 @@ public class UserDetails {
     public boolean register(Connection connection, String username, String password) {
         boolean match = false;
 
-        try (PreparedStatement statement = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)")) {
+        try (PreparedStatement statement = connection.prepareStatement("INSERT INTO users (username, password, history) VALUES (?, ?, ?)")) {
             statement.setString(1, username);
             statement.setString(2, password);
+            statement.setNull(3, Types.VARCHAR); //Sets history to null
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected > 0) {
                 storeUsers.put(username, new User(username, password));
@@ -99,6 +101,7 @@ public class UserDetails {
             while (resultSet.next()) {
                 String username = resultSet.getString("username");
                 String password = resultSet.getString("password");
+                String history = resultSet.getString("history");
                 storeUsers.put(username, new User(username, password));
             }
         } catch (SQLException e) {
@@ -116,7 +119,7 @@ public class UserDetails {
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                String history = resultSet.getString("history");
+                String history = resultSet.getString(1);
                 if (history != null && !history.isEmpty()) {
                     historyBuilder.append(history);
                     historyBuilder.append("\n");
@@ -126,6 +129,8 @@ public class UserDetails {
             } else {
                 historyBuilder.append("User not found: ").append(username);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         return historyBuilder.toString();
@@ -133,9 +138,10 @@ public class UserDetails {
 
     //M 9/8: append showName to user's history in user table
     public void saveHistory(Connection connection, String username, String showName) {
-        try (PreparedStatement statement = connection.prepareStatement("UPDATE users SET history = CONCAT(IFNULL(history, ''), ?) WHERE username = ?")) { //Concat to add
+        try (PreparedStatement statement = connection.prepareStatement("UPDATE users SET history = CASE WHEN history IS NULL THEN ? ELSE history || ? END WHERE username = ?")) { //Concat with ||
             statement.setString(1, showName + "\n");
-            statement.setString(2, username);
+            statement.setString(2, showName + "\n");
+            statement.setString(3, username);
             statement.executeUpdate();
 
             User user = storeUsers.get(username);
