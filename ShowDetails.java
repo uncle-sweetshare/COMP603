@@ -9,13 +9,14 @@ import java.util.Scanner;
 public class ShowDetails {
 
     Seats seatsObj = new Seats();
+    UserDetails userdetailsObj = new UserDetails();
 
     private Connection connection;
 
     public ShowDetails(Connection connection) {
         this.connection = connection;
     }
-    
+
     //M 8/6: yeah this works!
     public void createShowTable(Connection connection) {
         try (Statement statement = connection.createStatement()) {
@@ -47,9 +48,9 @@ public class ShowDetails {
             System.out.println("An error occurred while creating database tables: " + e.getMessage());
         }
     }
-    
+
     //M 8/6: populates the show table with details, dates, etc. WORKING!
-        public void populateShowsTable() {
+    public void populateShowsTable() {
         try {
             //SQL statement to insert show details
             String insertShowStatement = "INSERT INTO shows (name, description, date) VALUES (?, ?, ?)";
@@ -118,7 +119,7 @@ public class ShowDetails {
             System.out.println("Error executing SQL query: " + e.getMessage());
         }
     }
-    
+
     //M 9/6: added new method that makes a string of the show details - it's kind of generic code and i haven't tested the formatting so if it prints weirdly, soz i will fix it
     public String getShowDetails(Connection connection) {
         StringBuilder result = new StringBuilder();
@@ -248,93 +249,90 @@ public class ShowDetails {
                 }
             }
         }
+        boolean[][] choosingSeats = seatsObj.loadSeats(showChoice, dateChoice); //Load the correct show's seat array based on show and date option chosen
 
-                boolean[][] choosingSeats = seatsObj.loadSeats(showChoice, dateChoice); //Load the correct show's seat array based on show and date option chosen
+        System.out.println("\nSeat availability:\n");
+        seatsObj.printArray(choosingSeats);
 
-                System.out.println("\nSeat availability:\n");
-                seatsObj.printArray(choosingSeats);
+        int row = 0;
+        int col = 0;
 
-                int row = 0;
-                int col = 0;
-                
-                boolean success = false;
-                
-                do {
-                    System.out.println("\nEnter seat number to reserve\nRow: ");
-                    if (scan.hasNextInt()) {
-                        row = scan.nextInt();
-                        success = true;
-                    } else {
-                        String input = scan.nextLine();
-                        if(input.equalsIgnoreCase("x")){
-                            quit = true;
-                            break;
-                        }
-                        else{
-                            System.out.println("Invalid input! Please enter a row number: ");
-                        }
-                    }
-                } while (!success);
-                
-                if(!quit)
-                {
-                    success = false;
-                    
-                    do {
-                        System.out.println("\nColumn: ");
-                        if (scan.hasNextInt()) {
-                            col = scan.nextInt();
-                            success = true;
-                        } else {
-                            String input = scan.nextLine();
-                            if(input.equalsIgnoreCase("x")){
-                                quit = true;
-                                break;
-                            }
-                            else{
-                                System.out.println("Invalid input! Please enter a column number: ");
-                            }
-                        }
-                    } while (!success);
+        boolean success = false;
+
+        do {
+            System.out.println("\nEnter seat number to reserve\nRow: ");
+            if (scan.hasNextInt()) {
+                row = scan.nextInt();
+                success = true;
+            } else {
+                String input = scan.nextLine();
+                if (input.equalsIgnoreCase("x")) {
+                    quit = true;
+                    break;
+                } else {
+                    System.out.println("Invalid input! Please enter a row number: ");
                 }
-                
-                //fixing stuff below here
-                
-                
-                if(!quit)
-                {
-                    seatsObj.chooseSeat(choosingSeats, row, col);
-                    seatsObj.saveSeats(choosingSeats, showChoice, dateChoice);
+            }
+        } while (!success);
 
-                    int dateIndex = dateChoice.toLowerCase().charAt(0) - 'a';
+        if (!quit) {
+            success = false;
 
-                    if (dateIndex >= 0 && dateIndex < dateArray.length) //If selected date is valid, save booked show to user's file and go to ticket creation
-                    {
-                        String showName = selectedShow.getName();
-                        userDetailsObj.saveHistory(connection, username, showName);
-
-                        if (row <= 2) //Depending on which row they pick, the tickets will be different prices. Expensive in the front and cheaper at the back.
-                        {
-                            PlatinumTicket ticket = new PlatinumTicket(row);
-                            ticket.calcPrice(row);
-                            ticket.printPrice();
-
-                        } else if (row > 2 && row <= 5) {
-                            GoldTicket ticket = new GoldTicket(row);
-                            ticket.calcPrice(row);
-                            ticket.printPrice();
-                        } else if (row > 5 && row <= 9) {
-                            StandardTicket ticket = new StandardTicket(row);
-                            ticket.calcPrice(row);
-                            ticket.printPrice();
-                        }
+            do {
+                System.out.println("\nColumn: ");
+                if (scan.hasNextInt()) {
+                    col = scan.nextInt();
+                    success = true;
+                } else {
+                    String input = scan.nextLine();
+                    if (input.equalsIgnoreCase("x")) {
+                        quit = true;
+                        break;
                     } else {
-                        System.out.println("Invalid date selection.");
+                        System.out.println("Invalid input! Please enter a column number: ");
                     }
                 }
-        } else {
-            System.out.println("Invalid show selection.");
+            } while (!success);
         }
-    return quit ;
-}
+
+        //fixing stuff below here
+        if (!quit) {
+            seatsObj.chooseSeat(choosingSeats, row, col);
+            seatsObj.saveSeats(choosingSeats, showChoice, dateChoice);
+
+            //Save booked show to user's file
+            switch (showChoice.toLowerCase()) {
+                case "a":
+                    userdetailsObj.saveHistory(connection, username, "Cats");
+                    break;
+                case "b":
+                    userdetailsObj.saveHistory(connection, username, "Little Shop of Horrors");
+                    break;
+                case "c":
+                    userdetailsObj.saveHistory(connection, username, "Fiddler on the Roof");
+                    break;
+                case "d":
+                    userdetailsObj.saveHistory(connection, username, "Evita");
+                    break;
+            }
+
+            //Ticket creation
+            if (row <= 2) //Depending on which row they pick, the tickets will be different prices. Expensive in the front and cheaper at the back.
+            {
+                PlatinumTicket ticket = new PlatinumTicket(row);
+                ticket.calcPrice(row);
+                ticket.printPrice();
+
+            } else if (row > 2 && row <= 5) {
+                GoldTicket ticket = new GoldTicket(row);
+                ticket.calcPrice(row);
+                ticket.printPrice();
+            } else if (row > 5 && row <= 9) {
+                StandardTicket ticket = new StandardTicket(row);
+                ticket.calcPrice(row);
+                ticket.printPrice();
+            }
+        }
+        return quit;
     }
+}
