@@ -141,6 +141,7 @@ public class Seats {
         }
     }
     
+    //M 9/6: minor update to method.
     /* ChooseSeat method:
      * User chooses a seat in the array to book. An array is passed in, along with user's
      * selected row and column. The corresponding seat in the array is flagged to true.
@@ -149,7 +150,7 @@ public class Seats {
     public void chooseSeat(boolean[][] toBook, int row, int column) {
         boolean[][] seats = toBook;
         
-        printArray(toBook);
+        arrayString(toBook); //Now using arrayString method for GUI
 
         if (!seats[row][column]) {
             seats[row][column] = true;
@@ -158,9 +159,35 @@ public class Seats {
         }
     }
 
+    //M 9/6: updated method. now uses stringbuilder to turn seating array into a string which is then returned
+    public String arrayString(boolean[][] seatsArray) {
+        StringBuilder result = new StringBuilder();
+
+        result.append("   "); //For correctly spacing the numbers
+        for (int col = 0; col < seatsArray[0].length; col++) {
+            result.append(String.format("%2d ", col)); //Append the column number
+        }
+        result.append("\n");
+
+        for (int row = 0; row < seatsArray.length; row++) {
+            result.append(String.format("%2d", row)); //Append the row number
+            for (int col = 0; col < seatsArray[0].length; col++) {
+                if (seatsArray[row][col]) {
+                    result.append("  x");
+                } else {
+                    result.append("  o");
+                }
+            }
+            result.append("\n"); //Append \n after each row so it's displayed as a grid
+        }
+
+        return result.toString(); //Return the created array-string
+    }
+
+    //OLD METHOD
     /* PrintArray method:
-     * Prints the array that is passed in, with row and column numbers for clarity.
-    */
+     * Prints the array that is passed in, with row and column numbers for clarity. <- this is old just keeping it so i can rewrite later
+     */
     public void printArray(boolean[][] seatsArray) {
         System.out.print("   "); //For correctly spacing the numbers
         for (int col = 0; col < seatsArray[0].length; col++) {
