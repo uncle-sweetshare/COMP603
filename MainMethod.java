@@ -16,17 +16,16 @@ public class MainMethod {
 
         //Start database connection
         try (Connection connection = DriverManager.getConnection("jdbc:derby:booking_boss;create=true")) {
-            
+
             //dropAllTables(connection); //be careful with this one................ feel free to comment it out
-            
             ShowDetails showDetails = new ShowDetails(connection);
             showDetails.createShowTable(connection); //M 8/6: create the shows table - WORKING
             showDetails.populateShowsTable(); //M 8/6: populate the shows table - WORKING
-            
+
             //showDetails.printShowDetails(); // M 8/6: retrieve show details from database & print - WORKING
             userDetails.createUserTable(connection); //M 8/6: create the user table - WORKING
             userDetails.retrieveUsers(connection); //retrieves users from DB - WORKING
-            
+
             String userInput = "";
             String username = "";
             String password = "";
@@ -34,80 +33,80 @@ public class MainMethod {
 
             System.out.println("Welcome to Booking Boss. Press 'x' to exit.");
 
-        do {
-            System.out.println("A. Log in");
-            System.out.println("B. Register");
-
-            if (scan.hasNextLine()) {
-                userInput = scan.nextLine();
-            } else {
-                System.out.println("No input available. Exiting...");
-                break;
-            }
-
-            if (userInput.equalsIgnoreCase("a")) {
-                System.out.println("\nUsername:");
+            do {
+                System.out.println("A. Log in");
+                System.out.println("B. Register");
 
                 if (scan.hasNextLine()) {
-                    username = scan.nextLine();
+                    userInput = scan.nextLine();
                 } else {
                     System.out.println("No input available. Exiting...");
                     break;
                 }
 
-                if (username.equalsIgnoreCase("x")) {
+                if (userInput.equalsIgnoreCase("a")) {
+                    System.out.println("\nUsername:");
+
+                    if (scan.hasNextLine()) {
+                        username = scan.nextLine();
+                    } else {
+                        System.out.println("No input available. Exiting...");
+                        break;
+                    }
+
+                    if (username.equalsIgnoreCase("x")) {
+                        break;
+                    }
+
+                    System.out.println("Password:");
+
+                    if (scan.hasNextLine()) {
+                        password = scan.nextLine();
+                    } else {
+                        System.out.println("No input available. Exiting...");
+                        break;
+                    }
+
+                    if (password.equalsIgnoreCase("x")) {
+                        break;
+                    }
+
+                    matching = userDetails.login(connection, username, password);
+                } else if (userInput.equalsIgnoreCase("b")) {
+                    System.out.println("Username:");
+
+                    if (scan.hasNextLine()) {
+                        username = scan.nextLine();
+                    } else {
+                        System.out.println("No input available. Exiting...");
+                        break;
+                    }
+
+                    if (username.equalsIgnoreCase("x")) {
+                        break;
+                    }
+
+                    System.out.println("Password:");
+
+                    if (scan.hasNextLine()) {
+                        password = scan.nextLine();
+                    } else {
+                        System.out.println("No input available. Exiting...");
+                        break;
+                    }
+
+                    if (password.equalsIgnoreCase("x")) {
+                        break;
+                    }
+
+                    matching = userDetails.register(connection, username, password);
+                } else if (userInput.equalsIgnoreCase("x")) {
+                    System.out.println("Thanks for using Booking Boss!");
                     break;
-                }
-
-                System.out.println("Password:");
-
-                if (scan.hasNextLine()) {
-                    password = scan.nextLine();
                 } else {
-                    System.out.println("No input available. Exiting...");
-                    break;
+                    System.out.println("\nPlease select one of the options or press 'x' to exit!");
                 }
-
-                if (password.equalsIgnoreCase("x")) {
-                    break;
-                }
-
-                matching = userDetails.login(connection, username, password);
-            } else if (userInput.equalsIgnoreCase("b")) {
-                System.out.println("Username:");
-
-                if (scan.hasNextLine()) {
-                    username = scan.nextLine();
-                } else {
-                    System.out.println("No input available. Exiting...");
-                    break;
-                }
-
-                if (username.equalsIgnoreCase("x")) {
-                    break;
-                }
-
-                System.out.println("Password:");
-
-                if (scan.hasNextLine()) {
-                    password = scan.nextLine();
-                } else {
-                    System.out.println("No input available. Exiting...");
-                    break;
-                }
-
-                if (password.equalsIgnoreCase("x")) {
-                    break;
-                }
-
-                matching = userDetails.register(connection, username, password);
-            } else if (userInput.equalsIgnoreCase("x")) {
-                System.out.println("Thanks for using Booking Boss!");
-                break;
-            } else {
-                System.out.println("\nPlease select one of the options or press 'x' to exit!");
-            }
-        } while (!matching && !userInput.equalsIgnoreCase("x"));
+            } while (!matching && !userInput.equalsIgnoreCase("x"));
 
             if (matching) {
                 System.out.println("\nWelcome " + username + "!");
@@ -125,24 +124,24 @@ public class MainMethod {
 
                         if (selected.equalsIgnoreCase("a")) {
                             System.out.println("\nAvailable shows:");
-                        showDetails.printShowDetails();
-                    } else if (selected.equalsIgnoreCase("b")) {
-                        System.out.println("\n" + username + "'s previously booked shows: ");
-                        userDetails.printHistory(connection, username);
-                    } else if (selected.equalsIgnoreCase("c")) {
-                        boolean quit = showDetails.book(username);
-                        
-                        if (quit) {
-                            break;
+                            showDetails.printShowDetails();
+                        } else if (selected.equalsIgnoreCase("b")) {
+                            System.out.println("\n" + username + "'s previously booked shows: ");
+                            userDetails.printHistory(connection, username);
+                        } else if (selected.equalsIgnoreCase("c")) {
+                            boolean quit = showDetails.book(username);
+
+                            if (quit) {
+                                break;
+                            }
                         }
                     }
                 } while (true);
+
             }
-        } catch (SQLException e) {
-            System.out.println("Error connecting to database! " + e.getMessage());
         }
     }
-    
+
     //M 8/6: added this method for testing, don't randomly call it because it will delete all the tables lol
     public static void dropAllTables(Connection connection) {
         try {
