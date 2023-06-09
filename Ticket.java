@@ -21,8 +21,8 @@ abstract class Ticket {
     */
     abstract public double calcPrice(int row);
     
-    public void printPrice()
+    public String toString()
     {
-        System.out.println("The ticket price for your chosen seat is $"+this.price);
+        return ""+this.price;
     }
 }

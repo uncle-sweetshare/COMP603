@@ -18,15 +18,24 @@ public class RegisterJFrame extends javax.swing.JFrame {
     String password;
     boolean success;
     UserDetails userDetails;
+    ShowDetails showDetails;
     
     /**
      * Creates new form RegisterNewUserJFrame
      */
     public RegisterJFrame() {
         initComponents();
-        userDetails = new UserDetails();
         userExistsLabel.setVisible(false);
         userCreatedLabel.setVisible(false);
+    }
+    
+    public RegisterJFrame(UserDetails userDetails, ShowDetails showDetails)
+    {
+        initComponents();
+        userExistsLabel.setVisible(false);
+        userCreatedLabel.setVisible(false);
+        this.userDetails = userDetails;
+        this.showDetails = showDetails;
     }
 
     /**
@@ -149,7 +158,7 @@ public class RegisterJFrame extends javax.swing.JFrame {
         this.username = userTextField.getText();
         this.password = passTextField.getText();
         
-        try (Connection connection = DriverManager.getConnection("jdbc:derby:database_name;create=true")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:derby:booking_boss;create=true")) {
             this.success = userDetails.register(connection, username, password);
             
             if(this.success) //if the creation of a new user was successful then print a message saying so.
