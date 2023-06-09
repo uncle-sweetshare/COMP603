@@ -57,7 +57,7 @@ public class ShowDetails {
             //Show data
             String[] showNames = {"Cats", "Little Shop of Horrors", "Fiddler on the Roof", "Evita"};
             String[] descriptions = {
-                "Cats (1981): Based on the universally popular poetry of T.S. Eliot, Cats tells the story\nof the annual gathering of Jelliclncats at which time one special cat is selected to ascend to the Heaviside layer.",
+                "Cats (1981): Based on the universally popular poetry of T.S. Eliot, Cats tells the story\nof the annual gathering of Jellicle cats at which time one special cat is selected to ascend to the Heaviside layer.",
                 "Little Shop of Horrors (1982): The meek floral assistant, Seymour Krelborn, raises a new\nbreed of carnivorous plant he names “Audrey II” after his coworker crush. Over time, Seymour discovers Audrey II’s evil intent...",
                 "Fiddler on the Roof (1971): In pre-revolutionary Russia, Tevye, a poor Jewish peasant living\nin Anatevka, is faced with the challenge of marrying off his five daughters amidst the growing tension in his village.",
                 "Evita (1978): Based on the life of Eva Peron, a B-picture Argentinian actress who eventually\nbecame the wife of Argentinian president Juan Domingo Perón, and the most beloved and hated woman in Argentina."
@@ -118,8 +118,31 @@ public class ShowDetails {
             System.out.println("Error executing SQL query: " + e.getMessage());
         }
     }
+    
+    //M 9/6: added new method that makes a string of the show details - it's kind of generic code and i haven't tested the formatting so if it prints weirdly, soz i will fix it
+    public String getShowDetails(Connection connection) {
+        StringBuilder result = new StringBuilder();
 
-    //M 8/6: actually just grabbed the original book method because it's a beast - maybe look at splitting it? also it's broken and i can't brain enough to fix it right now
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM shows");
+
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                String description = resultSet.getString("description");
+                String date = resultSet.getString("date");
+
+                result.append("Show Name: ").append(name).append("\n");
+                result.append("Description: ").append(description).append("\n");
+                result.append("Date: ").append(date).append("\n\n");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result.toString();
+    }
+
+    //M 9/6: i hate this method i am working on it but i hate it
     /* Book method:
      * Takes in username as a parameter so it can be passed to the saveHistory method, which saves the show to the user's file.
      * User selects a show to book along with a date, and the correct seating array is loaded based on these choices. The
@@ -152,64 +175,80 @@ public class ShowDetails {
                 case "evita":
                     showChoice = "d";
                     break;
+                default:
+                    System.out.println("Show not found!");
+                    break;
             }
         } else {
             System.out.println("Show not found!");
         }
+        if (!quit) {
+            System.out.println("\nEnter a date:");
+            String dateInput = scan.nextLine();
 
-        System.out.println("\nEnter a date:");
-        String dateInput = scan.nextLine();
-
-        if (showChoice == "a") {
-            switch (dateInput.toLowerCase()) {
-                case "24 june":
-                    dateChoice = "a";
-                    break;
-                case "01 july":
-                    showChoice = "b";
-                    break;
-                case "13 july":
-                    dateChoice = "a";
-                    break;
-            }
-        } else if (showChoice == "b") {
-            switch (dateInput.toLowerCase()) {
-                case "21 june":
-                    dateChoice = "a";
-                    break;
-                case "10 july":
-                    showChoice = "b";
-                    break;
-                case "17 july":
-                    dateChoice = "a";
-                    break;
-            }
-        } else if (showChoice == "c") {
-            switch (dateInput.toLowerCase()) {
-                case "12 june":
-                    dateChoice = "a";
-                    break;
-                case "27 june":
-                    showChoice = "b";
-                    break;
-                case "07 july":
-                    dateChoice = "a";
-                    break;
-            }
-        } else if (showChoice == "d") {
-            switch (dateInput.toLowerCase()) {
-                case "18 june":
-                    dateChoice = "a";
-                    break;
-                case "03 july":
-                    showChoice = "b";
-                    break;
-                case "19 july":
-                    dateChoice = "a";
-                    break;
+            if (showChoice.equals("a")) {
+                switch (dateInput.toLowerCase()) {
+                    case "24 june":
+                        dateChoice = "a";
+                        break;
+                    case "01 july":
+                        dateChoice = "b";
+                        break;
+                    case "13 july":
+                        dateChoice = "c";
+                        break;
+                    default:
+                        System.out.println("Invalid date!");
+                        break;
+                }
+            } else if (showChoice.equals("b")) {
+                switch (dateInput.toLowerCase()) {
+                    case "21 june":
+                        dateChoice = "a";
+                        break;
+                    case "10 july":
+                        dateChoice = "b";
+                        break;
+                    case "17 july":
+                        dateChoice = "c";
+                        break;
+                    default:
+                        System.out.println("Invalid date!");
+                        break;
+                }
+            } else if (showChoice.equals("c")) {
+                switch (dateInput.toLowerCase()) {
+                    case "12 june":
+                        dateChoice = "a";
+                        break;
+                    case "27 june":
+                        dateChoice = "b";
+                        break;
+                    case "07 july":
+                        dateChoice = "c";
+                        break;
+                    default:
+                        System.out.println("Invalid date!");
+                        break;
+                }
+            } else if (showChoice.equals("d")) {
+                switch (dateInput.toLowerCase()) {
+                    case "18 june":
+                        dateChoice = "a";
+                        break;
+                    case "03 july":
+                        dateChoice = "b";
+                        break;
+                    case "19 july":
+                        dateChoice = "c";
+                        break;
+                    default:
+                        System.out.println("Invalid date!");
+                        break;
+                }
             }
         }
-        
+
                 boolean[][] choosingSeats = seatsObj.loadSeats(showChoice, dateChoice); //Load the correct show's seat array based on show and date option chosen
 
                 System.out.println("\nSeat availability:\n");
@@ -259,7 +298,9 @@ public class ShowDetails {
                     } while (!success);
                 }
                 
-                /*
+                //fixing stuff below here
+                
+                
                 if(!quit)
                 {
                     seatsObj.chooseSeat(choosingSeats, row, col);
@@ -291,12 +332,9 @@ public class ShowDetails {
                         System.out.println("Invalid date selection.");
                     }
                 }
-            */
-
-                /*
         } else {
             System.out.println("Invalid show selection.");
-        } */
-        return quit;
         }
+    return quit ;
+}
     }
