@@ -63,10 +63,10 @@ public class ShowDetails {
                 "Evita (1978): Based on the life of Eva Peron, a B-picture Argentinian actress who eventually\nbecame the wife of Argentinian president Juan Domingo Perón, and the most beloved and hated woman in Argentina."
             };
             String[][] dates = {
-                {"24 June, 01 July"}, // Dates for Show 1
-                {"21 June, 10 July"}, // Dates for Show 2
-                {"12 June, 27 June"}, // Dates for Show 3
-                {"18 June, 03 July"} // Dates for Show 4
+                {"24 June, 01 July, 13 July"}, // Dates for Show 1
+                {"21 June, 10 July, 17 July"}, // Dates for Show 2
+                {"12 June, 27 June, 07 July"}, // Dates for Show 3
+                {"18 June, 03 July, 19 July"} // Dates for Show 4
             };
 
             //Execute SQL statement for each show
@@ -129,44 +129,88 @@ public class ShowDetails {
     public boolean book(String username) {
         Scanner scan = new Scanner(System.in);
         boolean quit = false;
-        
-        System.out.println("\nSelect a show to book");
-        System.out.println("A. Cats\nB. Little Shop of Horrors\nC. Fiddler on the Roof\nD. Evita\n");
 
-        String selectShow = scan.nextLine();
+        System.out.println("\nEnter a show name to book:");
+        String showNameInput = scan.nextLine();
 
-        if (selectShow.equalsIgnoreCase("x"))
-        {
+        String showChoice = "";
+        String dateChoice = "";
+
+        if (showNameInput.equalsIgnoreCase("x")) {
             quit = true;
+        } else if (showNameInput != null) {
+            switch (showNameInput.toLowerCase()) {
+                case "cats":
+                    showChoice = "a";
+                    break;
+                case "little shop of horrors":
+                    showChoice = "b";
+                    break;
+                case "fiddler on the roof":
+                    showChoice = "c";
+                    break;
+                case "evita":
+                    showChoice = "d";
+                    break;
+            }
+        } else {
+            System.out.println("Show not found!");
         }
 
-        //M 8/6: yeah obviously this is where it gets all fucky and i think you wrote this part echo? i can't remember what's going on here
-        //User's choice of show:
-        if (selectShow.equalsIgnoreCase("a") || selectShow.equalsIgnoreCase("b")
-                || selectShow.equalsIgnoreCase("c") || selectShow.equalsIgnoreCase("d"))
-        {
-            int showIndex = selectShow.toLowerCase().charAt(0) - 'a'; //Convert letter to index
-            Show selectedShow = (Show) storeShows.get(showIndex);
+        System.out.println("\nEnter a date:");
+        String dateInput = scan.nextLine();
 
-            System.out.println("\nSelect an available date (A-C):");
-            String[] dateArray = selectedShow.getDates();
-            char letter = 'A';
-
-            for (int i = 0; i < dateArray.length; i++) {
-                System.out.println(letter + ". " + dateArray[i]);
-                letter++;
+        if (showChoice == "a") {
+            switch (dateInput.toLowerCase()) {
+                case "24 june":
+                    dateChoice = "a";
+                    break;
+                case "01 july":
+                    showChoice = "b";
+                    break;
+                case "13 july":
+                    dateChoice = "a";
+                    break;
             }
-
-            String selectedDate = scan.nextLine();
-
-            if (selectedDate.equalsIgnoreCase("x"))
-            {
-                quit = true;
+        } else if (showChoice == "b") {
+            switch (dateInput.toLowerCase()) {
+                case "21 june":
+                    dateChoice = "a";
+                    break;
+                case "10 july":
+                    showChoice = "b";
+                    break;
+                case "17 july":
+                    dateChoice = "a";
+                    break;
             }
-            else
-            {
-                UserDetails userDetailsObj = new UserDetails();
-                boolean[][] choosingSeats = seatsObj.loadSeats(selectShow, selectedDate); //Load the correct show's seat array based on show and date option chosen
+        } else if (showChoice == "c") {
+            switch (dateInput.toLowerCase()) {
+                case "12 june":
+                    dateChoice = "a";
+                    break;
+                case "27 june":
+                    showChoice = "b";
+                    break;
+                case "07 july":
+                    dateChoice = "a";
+                    break;
+            }
+        } else if (showChoice == "d") {
+            switch (dateInput.toLowerCase()) {
+                case "18 june":
+                    dateChoice = "a";
+                    break;
+                case "03 july":
+                    showChoice = "b";
+                    break;
+                case "19 july":
+                    dateChoice = "a";
+                    break;
+            }
+        }
+        
+                boolean[][] choosingSeats = seatsObj.loadSeats(showChoice, dateChoice); //Load the correct show's seat array based on show and date option chosen
 
                 System.out.println("\nSeat availability:\n");
                 seatsObj.printArray(choosingSeats);
@@ -215,12 +259,13 @@ public class ShowDetails {
                     } while (!success);
                 }
                 
+                /*
                 if(!quit)
                 {
                     seatsObj.chooseSeat(choosingSeats, row, col);
-                    seatsObj.saveSeats(choosingSeats, selectShow, selectedDate);
+                    seatsObj.saveSeats(choosingSeats, showChoice, dateChoice);
 
-                    int dateIndex = selectedDate.toLowerCase().charAt(0) - 'a';
+                    int dateIndex = dateChoice.toLowerCase().charAt(0) - 'a';
 
                     if (dateIndex >= 0 && dateIndex < dateArray.length) //If selected date is valid, save booked show to user's file and go to ticket creation
                     {
@@ -246,11 +291,12 @@ public class ShowDetails {
                         System.out.println("Invalid date selection.");
                     }
                 }
-            }
+            */
 
+                /*
         } else {
             System.out.println("Invalid show selection.");
-        }
+        } */
         return quit;
+        }
     }
-}
